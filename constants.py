@@ -2,6 +2,8 @@ import os
 from dotenv import load_dotenv
 from chromadb.config import Settings
 
+# มองหาไฟล์ .env และโหลดขึ้นมาใช้งาน
+# os.environ.get('key')
 load_dotenv()
 
 # พาร์ทที่เก็บ file ของ AI DB

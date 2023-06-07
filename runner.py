@@ -16,15 +16,25 @@ ai_db = Chroma(
     embedding_function=embedding,
     client_settings=CHROMA_SETTINGS
 )
+collection = ai_db.get()
+metadatas = [meta['source'] for meta in collection['metadatas']]
+is_ai_db = len(metadatas) > 0
+if is_ai_db == False:
+    print()
+    print('Warning: \nIf you want to ask any question from document')
+    print('before run this script please run "python ingre.py" to create AI database and query any question')
+    print()
+
+
 
 
 # ผ่านข้อมูลที่ได้จาก AI DB ให้กับ LLM (GPT4All) เพื่อเรียบเรียงคำตอบ
 from langchain.prompts import PromptTemplate
 from gpt4all import pyllmodel
 prompt=PromptTemplate(
-    template=
-"""
+    template= """
 information: {personnel_info}
+
 question: {question}
 """,
     input_variables=['personnel_info', 'question']
@@ -45,10 +55,13 @@ while True:
 
 
     # ทดสอบถาม AI DB
-    result_docs = ai_db.similarity_search(query=question, )
-    #print(result_docs)
+    personnel_info = ''
+    if is_ai_db:
+        result_docs = ai_db.similarity_search(query=question, )
+        personnel_info = ''.join([doc.page_content for doc in result_docs])
+        #print(result_docs)
 
-    query_str = prompt.format(personnel_info=''.join([doc.page_content for doc in result_docs]), question=question)
+    query_str = prompt.format(personnel_info=personnel_info, question=question)
     print(f'Prompt: {query_str}')
     print()
     llm.generate(
