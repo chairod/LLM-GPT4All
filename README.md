@@ -65,7 +65,9 @@ SOURCE_DOCUMENT_PATH=source_documents\
 เพื่อ Install package python ที่จำเป็นสำหรับโครงการนี้
 + ไฟล์เอกสารที่รองรับในปัจจุบัน ประกอบด้วย *.csv, *.doc, *.docx, *.enex, *.eml, *.epub, *.html, *.md, *.dot, *.pdf, *.ppt, *.pptx, *.txt โดยนำเอกสารที่ต้องการให้ AI อ่านไปเก็บไว้ใน Folder **source_documents** หลังจากนั้น  
 สั่งให้ AI อ่านข้อมูลเอกสารโดยรันคำสั่ง `python ingre.py` หรือ `py ingre.py`  ตัว AI จะอ่านเอกสารเฉพาะที่ยังไม่เคยเก็บไว้ใน AI DB
-+ รันเพื่อเปิดใช้งาน AI โดยรันคำสั่ง `python runner.py` หรือ `py runner.py`
++ รันเพื่อเปิดใช้งาน AI โดยรันคำสั่ง `python runner.py` หรือ `py runner.py`  
+  **_ระหว่างการรัน_**  
+  * หากยังไม่มี Model ที่กำหนดไว้ใน .env **LLM_MODEL_NAME** จะทำการดาวน์โหลดจากเว็บไซด์ของ GPT4all และเก็บลงไปในพาร์ทที่ระบุใน .env **LLM_MODEL_PATH**
 
 
 
