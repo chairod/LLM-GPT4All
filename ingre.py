@@ -24,13 +24,13 @@ from langchain.vectorstores import Chroma
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.docstore.document import Document
 
-from constants import CHROMA_SETTINGS, AI_DB_PERSIST_DIR, SOURCE_DOCUMENT_PATH, EMBEDDING_MODEL_NAME
+from constants import CHROMA_SETTINGS, AI_DB_PERSIST_DIR, SOURCE_DOCUMENT_PATH, EMBEDDING_INSTANCE
 
 
 # Load environment variables
 persist_directory = AI_DB_PERSIST_DIR
 source_directory = SOURCE_DOCUMENT_PATH
-embeddings_model_name = EMBEDDING_MODEL_NAME
+#embeddings_model_name = EMBEDDING_MODEL_NAME
 chunk_size = 500
 chunk_overlap = 50
 
@@ -138,7 +138,7 @@ def does_vectorstore_exist(persist_directory: str) -> bool:
 
 def main():
     # Create embeddings
-    embeddings = HuggingFaceEmbeddings(model_name=embeddings_model_name)
+    embeddings = EMBEDDING_INSTANCE #HuggingFaceEmbeddings(model_name=embeddings_model_name)
     #embeddings = HuggingFaceEmbeddings()
 
     if does_vectorstore_exist(persist_directory):
