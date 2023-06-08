@@ -42,7 +42,7 @@ if is_ai_db == False:
 
 # ผ่านข้อมูลที่ได้จาก AI DB ให้กับ LLM (GPT4All) เพื่อเรียบเรียงคำตอบ
 from langchain.prompts import PromptTemplate
-from gpt4all import pyllmodel, gpt4all
+from custom_gpt4all import pyllmodel, gpt4all
 import time
 import os
 model_path = f'{LLM_MODEL_PATH}\\{LLM_MODEL_NAME}'
