@@ -12,6 +12,8 @@ Project นี้พัฒนาด้วยภาษา Python ร่วมก�
 + ให้ลง git เพื่อทำการ Clone project นี้ไปไว้ที่เครื่อง (ดาวน์โหลดได้จาก https://git-scm.com/downloads)
 + ใช้ Command นี้ในการ clone project  ` git clone https://github.com/chairod/LLM-GPT4All.git `
 + ให้ลง Python Version ` Python 3.10.11 ` และลง pip ` pip 23.1.2 ` ลิ้งดาวน์โหลด Python https://www.python.org/getit/
++ ให้ลง `Microsoft Visual C++` ได้จาก Folder `require-package` ให้เลือกลงตาม Window 64bit **_(vc_redist.x64.exe)_** หรือ 32Bit **_(vc_redist.x64.exe)_**  
+เนื่องจากในขั้นตอน `pip install -r requirements.txt` จะมี python package "chromadb" จำเป็นต้องใช้ในการ Build เพื่อ Install ลงเครื่อง
 
 
 
