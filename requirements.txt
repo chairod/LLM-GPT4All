@@ -5,7 +5,6 @@ duckdb==0.8.0
 langchain==0.0.171
 pygpt4all==1.1.0
 chromadb==0.3.26
-llama-cpp-python==0.1.50
 urllib3==2.0.2
 pdfminer.six==20221105
 python-dotenv==1.0.0

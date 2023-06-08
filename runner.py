@@ -1,7 +1,7 @@
 from constants import (
     #EMBEDDING_MODEL_NAME, 
     AI_DB_PERSIST_DIR, 
-    SOURCE_DOCUMENT_PATH,
+    #SOURCE_DOCUMENT_PATH,
     EMBEDDING_INSTANCE,
     CHROMA_SETTINGS, 
     LLM_MODEL_PATH,
@@ -40,13 +40,32 @@ if is_ai_db == False:
 
     
 
-
-
-
 # ผ่านข้อมูลที่ได้จาก AI DB ให้กับ LLM (GPT4All) เพื่อเรียบเรียงคำตอบ
 from langchain.prompts import PromptTemplate
 from gpt4all import pyllmodel, gpt4all
+import time
 import os
+model_path = f'{LLM_MODEL_PATH}\\{LLM_MODEL_NAME}'
+if os.path.exists(model_path) == False:
+    print(f"Please wait a moment for download model {LLM_MODEL_NAME} from website and save to local path {LLM_MODEL_PATH}")
+    gpt4all.GPT4All.download_model(
+        model_filename=LLM_MODEL_NAME, 
+        model_path=LLM_MODEL_PATH
+    )
+    print('Please wait about 5 seconds after download LLM Model')
+    time.sleep(5) # หยุดรอ 5 วินาที หลังดาวน์โหลดไฟล์เสร็จ
+
+llm = pyllmodel.LLModel()
+llm.load_model(model_path=model_path)
+# os.cpu_count() เป็นการนับจำนวน Logical Processors
+# กำหนดจำนวน Thread ในการทำงานของ LLM ซึ่งในที่นี้จะใช้ Logical Processors ทั้งหมดของ CPU
+llm.set_thread_count(os.cpu_count())
+
+
+# กำหนดรูปแบบของ Prompt
+# สำหรับผ่านค่าให้กับ LLM
+# {personnel_info}, {question}  ตั้งชื่อเป็นอะไรก็ได้ และ input_variables จะต้องกำหนดชื่อนั้นๆลงไปด้วย
+# query: เมื่อ LLM เจอคำนี้และได้คำตอบแล้ว LLM จะแสดงข้อความว่า  Answer: ....
 prompt=PromptTemplate(
     template= """
 {personnel_info}
@@ -55,24 +74,6 @@ question: {question}
 """,
     input_variables=['personnel_info', 'question']
 )
-llm = pyllmodel.LLModel()
-model_path = f'{LLM_MODEL_PATH}\\{LLM_MODEL_NAME}'
-if os.path.exists(model_path) == False:
-    print(f"Please wait a moment for download model {LLM_MODEL_NAME} from website and save to local path {LLM_MODEL_PATH}")
-    gpt4all_cls = gpt4all.GPT4All(
-        model_name=LLM_MODEL_NAME,
-        model_path=LLM_MODEL_PATH
-    )
-    gpt4all_cls.download_model(
-        model_filename=LLM_MODEL_NAME, 
-        model_path=LLM_MODEL_PATH,
-        verbose=True
-    )
-llm.load_model(model_path=model_path)
-# os.cpu_count() เป็นการนับจำนวน Logical Processors
-# กำหนดจำนวน Thread ในการทำงานของ LLM ซึ่งในที่นี้จะใช้ Logical Processors ทั้งหมดของ CPU
-llm.set_thread_count(os.cpu_count())
-
 
 
 print()
