@@ -68,7 +68,8 @@ llm.set_thread_count(os.cpu_count())
 # query: เมื่อ LLM เจอคำนี้และได้คำตอบแล้ว LLM จะแสดงข้อความว่า  Answer: ....
 prompt=PromptTemplate(
     template= """
-{personnel_info}
+information: 
+    {personnel_info}
 
 question: {question}
 """,
@@ -89,12 +90,28 @@ while True:
     # ทดสอบถาม AI DB
     personnel_info = ''
     if is_ai_db:
-        result_docs = ai_db.similarity_search(query=question, k=AI_DB_SEARCH_RESULT_RECORD)
-        personnel_info = ''.join([doc.page_content for doc in result_docs])
+        result_docs = ai_db.similarity_search_with_score(query=question, k=AI_DB_SEARCH_RESULT_RECORD)
+        out_info = []
+        for doc in result_docs:
+            document, score = doc
+
+            # ค่า score ที่ได้จาก ai db ที่น่าเชื่อถือที่สุด เพราะบางครั้งสิ่งที่เข้าไป สอบถาม ใน AI DB
+            # เนื้อหาของข้อความที่ได้จะไม่ตรงกับคำถาม เป็นผลทำให้  LLM ไม่สามารถตอบคำถามได้
+            if score >= 1.2:
+                continue
+            out_info.append(f'{document.page_content}')
+            out_info.append(f'\n\nscore: {score}\n') # แสดง score เส้นระยะความใกล้เคียงของเนื้อหาใน ai db กับคำถาม
+
+        # ถ้าคำถามกับเนื้อหาใน AI DB ไม่มีส่วนที่เกี่ยวข้องกับบอกให้ AI ตอบไปว่า "I don\'t know"
+        # ตัว AI DB จะจับคำ "answer" แล้วนำไปตอบให้
+        if len(out_info) == 0: 
+            out_info.append('Just provide answer "I don\'t know"')
+        personnel_info = ''.join(out_info)
         #print(result_docs)
 
     query_str = prompt.format(personnel_info=personnel_info, question=question)
-    print(f'Prompt: {query_str}')
+    print()
+    print(query_str)
     print()
     llm.generate(
         prompt=query_str,

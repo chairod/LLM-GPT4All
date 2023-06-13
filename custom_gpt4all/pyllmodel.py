@@ -125,9 +125,9 @@ class LLModel:
         self.model = None
         self.model_name = None
 
-    # def __del__(self):
-    #     if self.model is not None:
-    #         llmodel.llmodel_model_destroy(self.model)
+    def __del__(self):
+        if self.model is not None:
+            llmodel.llmodel_model_destroy(self.model)
 
     def load_model(self, model_path: str) -> bool:
         """
