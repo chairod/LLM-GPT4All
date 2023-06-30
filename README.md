@@ -83,7 +83,7 @@ SOURCE_DOCUMENT_PATH=source_documents\
 
 
 ### นัยความหมายของ Parameter ที่จะส่งให้กับ LLM (GPT4All)  
-รายชื่อ Parameter ทั้งหทดที่ผ่านให้กับ LLM ที่ใช้ในการรันเพื่อหาคำตอบจากสิ่งที่เราถาม
+รายชื่อ Parameter ทั้งหมดที่ผ่านให้กับ LLM ที่ใช้ในการรันเพื่อหาคำตอบจากสิ่งที่เราถาม
 ```
 # struct llmodel_prompt_context {
     #     float *logits;          // logits of current context
@@ -93,9 +93,11 @@ SOURCE_DOCUMENT_PATH=source_documents\
     #     int32_t n_past;         // number of tokens in past conversation
     #     int32_t n_ctx;          // number of tokens possible in context window
     #     int32_t n_predict;      // number of tokens to predict
-    #     int32_t top_k;          // top k logits to sample from => จำนวน Token
+    #     int32_t top_k;          // จำนวน Token ที่บอกให้ LLM หยิบมาวิเคราะห์เพื่อใช้ในการตอบคำถามจากรายการที่มีคำตอบที่เป็นไปได้มากที่สุดไปหาน้อย
+เช่น ถามว่า "นี่คือประเทศอะไร" ซึ่งถูกจัดลำดับรายการคำตอบที่เป็นไปได้คือ Thailand, Loa, Malasia, ... ค่าที่จะถูกหยิบมาจาก k คือ Loa, Malasia, ... เป็นต้น
     #     float top_p;            // nucleus sampling probability threshold
-    #     float temp;             // ค่าความคิดสร้างสรรค์ ในการสร้างรูปแบบประโยค สำหรับตอบคำถาม ค่าจะอยู๋ระหว่าง 0 - 1 (Decimal 
+    #     float temp;             // ค่าความคิดสร้างสรรค์ ในการสร้างรูปแบบประโยค
+สำหรับตอบคำถาม ค่าจะอยู่ระหว่าง 0 - 1 เช่น 0, 0.1, 0.2, 0.3, ..., 1
     #     int32_t n_batch;        // number of predictions to generate in parallel
     #     float repeat_penalty;   // penalty factor for repeated tokens
     #     int32_t repeat_last_n;  // last n tokens to penalize
