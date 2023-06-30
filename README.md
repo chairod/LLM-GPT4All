@@ -78,7 +78,30 @@ SOURCE_DOCUMENT_PATH=source_documents\
 
 ### คำนิยามที่ควรทราบ
 + Token ข้อความที่ถูกเก็บอยู่ใน .bin จะถูกเก็บแยกออกเป็นแต่ล่ะ Token ซึ่งในแต่ละ Token ก็จะประกอบไปด้วยข้อความที่อยู่ภายในนั้น  
-ยกตัวอย่างเช่น    ให้มองเป็นภาพของ 
+ยกตัวอย่างเช่น  
+ให้มองภาพเป็นลักษณะของ Table ซึ่งใน Table ก็จะประกอบไปด้วย Cell ในแต่ละ Cell ก็คือ Token และในแต่ละ Cell ก็จะประกอบไปด้วย ข้อความที่ถูกเก็บเอาไว้ซึ่งจะมี Id กำกับเอาไว้นั่นก็คือ TokenId
+
+
+### นัยความหมายของ Parameter ที่จะส่งให้กับ LLM (GPT4All)  
+รายชื่อ Parameter ทั้งหทดที่ผ่านให้กับ LLM ที่ใช้ในการรันเพื่อหาคำตอบจากสิ่งที่เราถาม
+```
+# struct llmodel_prompt_context {
+    #     float *logits;          // logits of current context
+    #     size_t logits_size;     // the size of the raw logits vector
+    #     int32_t *tokens;        // current tokens in the context window
+    #     size_t tokens_size;     // the size of the raw tokens vector
+    #     int32_t n_past;         // number of tokens in past conversation
+    #     int32_t n_ctx;          // number of tokens possible in context window
+    #     int32_t n_predict;      // number of tokens to predict
+    #     int32_t top_k;          // top k logits to sample from => จำนวน Token
+    #     float top_p;            // nucleus sampling probability threshold
+    #     float temp;             // ค่าความคิดสร้างสรรค์ ในการสร้างรูปแบบประโยค สำหรับตอบคำถาม ค่าจะอยู๋ระหว่าง 0 - 1 (Decimal 
+    #     int32_t n_batch;        // number of predictions to generate in parallel
+    #     float repeat_penalty;   // penalty factor for repeated tokens
+    #     int32_t repeat_last_n;  // last n tokens to penalize
+    #     float context_erase;    // percent of context to erase if we exceed the context window
+    # };
+```
 
 ### Development Change Log
 + 13/06/2023
