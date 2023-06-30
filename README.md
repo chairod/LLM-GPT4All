@@ -95,7 +95,10 @@ SOURCE_DOCUMENT_PATH=source_documents\
     #     int32_t n_predict;      // number of tokens to predict
     #     int32_t top_k;          // จำนวน Token ที่บอกให้ LLM หยิบมาวิเคราะห์เพื่อใช้ในการตอบคำถามจากรายการที่มีคำตอบที่เป็นไปได้มากที่สุดไปหาน้อย
 เช่น ถามว่า "นี่คือประเทศอะไร" ซึ่งถูกจัดลำดับรายการคำตอบที่เป็นไปได้คือ Thailand, Loa, Malasia, ... ค่าที่จะถูกหยิบมาจาก k คือ Loa, Malasia, ... เป็นต้น
-    #     float top_p;            // nucleus sampling probability threshold
+ระบุค่าเป็นจำนวนเต็ม เช่น 10,20,12,6,7, ... เป็นต้น
+    #     float top_p;            // เปอร์เซ็นต์ผลรวมของค่า top_k (สมมุติ กำหนดค่า top_k = 10) ผลรวมค่าความเป็นไปได้ของทั้ง 10 รายการจะต้องได้ >= top_p
+เช่น
+กำหนด top_p = 0.75 หรือ 75%, top_k = 10  ผลรวม % ความน่าจะเป็นของ top_k ทั้ง 10 รายการจะต้อง >= top_p (75%)
     #     float temp;             // ค่าความคิดสร้างสรรค์ ในการสร้างรูปแบบประโยค
 สำหรับตอบคำถาม ค่าจะอยู่ระหว่าง 0 - 1 เช่น 0, 0.1, 0.2, 0.3, ..., 1
     #     int32_t n_batch;        // number of predictions to generate in parallel
