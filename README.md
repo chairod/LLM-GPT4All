@@ -93,22 +93,41 @@ SOURCE_DOCUMENT_PATH=source_documents\
     #     int32_t n_past;         // number of tokens in past conversation
     #     int32_t n_ctx;          // number of tokens possible in context window
 
-    #     int32_t n_predict;      // number of tokens to predict
+    # จำนวนคำ (Token) สูงสุด ที่นำมาสร้างเป็นรูปประโยคคำตอบ สูงสุดไม่เกินจำนวนกี่คำ
+    # หากเกินจำนวนคำที่กำหนดแล้ว ถึงแม้ประโยคจะไม่สมบูรณ์ ก็จะหยุดสร้างคำตอบทันที (Stop Generate Text)
+    #     int32_t n_predict;
 
-    #     int32_t top_k;          // จำนวน Token ที่บอกให้ LLM หยิบมาวิเคราะห์เพื่อใช้ในการตอบคำถามจากรายการที่มีคำตอบที่เป็นไปได้มากที่สุดไปหาน้อย
-เช่น ถามว่า "นี่คือประเทศอะไร" ซึ่งถูกจัดลำดับรายการคำตอบที่เป็นไปได้คือ Thailand, Loa, Malasia, ... ค่าที่จะถูกหยิบมาจาก k คือ Loa, Malasia, ... เป็นต้น
-ระบุค่าเป็นจำนวนเต็ม เช่น 10,20,12,6,7, ... เป็นต้น
+    # จำนวน Token ที่บอกให้ LLM หยิบมาวิเคราะห์เพื่อใช้ในการตอบคำถามจากรายการที่มีคำตอบที่เป็นไปได้มากที่สุดไปหาน้อย
+    # เช่น ถามว่า "นี่คือประเทศอะไร" ซึ่งถูกจัดลำดับรายการคำตอบที่เป็นไปได้คือ Thailand, Loa, Malasia, ...
+    # ค่าที่จะถูกหยิบมาจาก k คือ Loa, Malasia, ... เป็นต้น
+    # ระบุค่าเป็นจำนวนเต็ม เช่น 10,20,12,6,7, ... เป็นต้น
+    #     int32_t top_k;
 
-    #     float top_p;            // เปอร์เซ็นต์ผลรวมของค่า top_k (สมมุติ กำหนดค่า top_k = 10) ผลรวมค่าความน่าจะเป็นของทั้ง 10 รายการจะต้องได้ >= top_p
-เช่น
-กำหนด top_p = 0.75 หรือ 75%, top_k = 10  ผลรวม % ความน่าจะเป็นของ top_k ทั้ง 10 รายการจะต้อง >= top_p (75%)
 
-    #     float temp;             // ค่าความคิดสร้างสรรค์ ในการสร้างรูปแบบประโยค
-สำหรับตอบคำถาม ค่าจะอยู่ระหว่าง 0 - 1 เช่น 0, 0.1, 0.2, 0.3, ..., 1
-0 = ตอบแบบตรงไปตรงมา โดยไม่ต้องใส่ความคิดสร้างสรรค์ ลงไป
-0.1 ... 1 => ใส่ความคิดสร้างสรรค์ ลงไปในคำตอบ ยิ่งค่าใกล้ 1 เท่าไหร่ ความคิดสร้างสรรค์ก็มากตามค่า
+    # เปอร์เซ็นต์ผลรวมของค่า top_k (สมมุติ กำหนดค่า top_k = 10) ผลรวมค่าความน่าจะเป็นของทั้ง 10 รายการจะต้องได้ >= top_p
+    # เช่น กำหนด top_p = 0.75 หรือ 75%, top_k = 10  ผลรวม % ความน่าจะเป็นของ top_k ทั้ง 10 รายการจะต้อง >= top_p (75%)
+    #     float top_p;
 
-    #     int32_t n_batch;        // number of predictions to generate in parallel
+    # ค่าความคิดสร้างสรรค์ ในการสร้างรูปแบบประโยค
+    # สำหรับตอบคำถาม ค่าจะอยู่ระหว่าง 0 - 1 เช่น 0, 0.1, 0.2, 0.3, ..., 1
+    # 0 = ตอบแบบตรงไปตรงมา โดยไม่ต้องใส่ความคิดสร้างสรรค์ ลงไป
+    # 0.1 ... 1 => ใส่ความคิดสร้างสรรค์ ลงไปในคำตอบ ยิ่งค่าใกล้ 1 เท่าไหร่ ความคิดสร้างสรรค์ก็มากตามค่า
+    #     float temp;
+
+
+
+    # จำนวน Prediction (การคาดการณ์/การทำนาย คำถาม หรือ จำนวนคำถาม) ที่จะเกิดขึ้นระหว่างการสร้างคำตอบ (Generate text)
+    # ส่วนใหญ่จะเกิดในกรณีที่ Q & A
+    # เช่น
+    # Q: Is it possible to buy and sell shares when the Share Status is CLOSEONLY? \
+    # A: No, it is not possible to buy and sell shares when the Share Status is CLOSEONLY.
+    # What are the possible values for the CanBuy and CanSell Account Status options?
+    #
+    # เมื่อ LLM สร้างคำตอบ สิ่งที่ได้จะเป็นส่วนของ A (Answer) และมีคำถามติดมาด้วย What are ...
+    # หากกำหนดค่า n_batch 2,3,4,5, ... LLM ก็จะค้นหาคำตอบเพิ่มเติมจากคำถามที่พบ
+    #     int32_t n_batch;
+
+
     #     float repeat_penalty;   // penalty factor for repeated tokens
     #     int32_t repeat_last_n;  // last n tokens to penalize
     #     float context_erase;    // percent of context to erase if we exceed the context window
