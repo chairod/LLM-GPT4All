@@ -137,7 +137,10 @@ SOURCE_DOCUMENT_PATH=source_documents\
 
 ### Development Change Log
 + 01/07/2023
-  + 
+  + ยกเลิกการใช้ PromptTemplate ของ Langchain มาใช้ variable str แทน
+  + ยกเลิกเรียกใช้ Chromadb ผ่าน Langchain เนื่องจากผลลัพธ์การค้นหา ไม่ถูกต้อง ไม่ตรงกับรูปประโยคที่ใช้ถาม โดยเรียกผ่าน chromadb ตรงๆ
+  + ปรับปรุง ingre.py (นำเข้าไฟล์เพื่อเตรียมสอบถาม) Clean ข้อความก่อนนำเข้า, Make point End-Of-Sequence/Stop Sequence ให้กับ LLM เป็นผลสืบเนื่องจากการยกเลิกเรียกใช้ chromadb ผ่าน Langchain
+  + replace ค่า ' (Single-Qoute) => \x027 ก่อนส่งเข้าไปค้นหาใน AI DB เพราะจะเกิดข้อผิดพลาด
 + 30/06/2023
   + ปรับปรุง Parameters top_k, top_p ให้เหมาะสมกับบริบทการใช้งาน
 + 13/06/2023
