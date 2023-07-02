@@ -1,0 +1,104 @@
++ 02/07/2023
+ > พบปัญหาการใช้งาน PromptTemplate ของ Langchain
+  ชุดข้อความที่ส่งให้กับ PromptTemplate จะมีรูปแบบ EOS (End-Of-Seqeuence หรือ Stop Sequence) เพื่อบอกให้ LLM สิ้นสุดการสร้างคำตอบเมื่อเจอ .\n
+
+  Test Case:
+    Case 1: Langchain PromptTemplate
+      ใช้ PromptTemplate ของ Langchain และ ส่งค่าที่ได้ให้กับ LLM  เมื่อ LLM สร้างคำตอบ กลับทำให้ .\n ที่เป็น End-Of-Sequence หรือ Stop Sequence ไม่เป็นผล และมีการสร้างคำถามเพิ่มเติมอีก....
+
+    Case 2: ใช้ variable str = "{query_result_ai_db}\n\nQuestion: {user_question}\n\n"
+      เมื่อ LLM สร้างคำตอบรูปแบบ End-Of-Sequence หรือ Stop Sequence ยังคงถูกรักษาไว้ และเมื่อ LLM เจอ .\n ก็หยุดสร้างคำตอบปกติ
+
+  
+  > Chromadb เมื่อส่งคำถามที่มี ' (single-quote) จะตี Error ออกมา เช่น "Can I deposit cash into someone else's account?"
+  จะได้ Error:
+    ParserException: Parser Error: syntax error at or near "s"
+    LINE 1: ...('Can I deposit cash into someone else's account?' in document) > 0 AND collec...
+
+    *** อยู่ระหว่างการหาวิธีการแก้ไข ***
+    แก้ชั่วคราวโดยการ replace ' => \x027 (Unicode)
+
+  > ChromaDb ถ้าส่งคำถามที่มี space (อยู่ด้านหน้าหรือหลัง) จะมีผลต่อการค้นหา ดังนั้นแนะนำให้ .strip() หรือเป็นการ trim space ออกไปจากข้อความก่อน
+
+
+
+
+
+
++ 01/07/2023
+ > มีรูปแบบ ประโยค หรือ ประโยคคำถามที่่ใกล้เคียงกัน (ต่างกันเพียงไม่กี่คำ) เช่น
+  What does the Account Status Lock(buy, sell) option indicate? 
+  What does the Account Status Lock(buy) option indicate?
+  What does the Account Status Lock(sell) option indicate? 
+
+  เมื่อค้นหา ผลลัพธ์ที่ได้ใน Element ที่ 1 (ซึ่ง AI DB จะจัดอันดับความน่าจะเป็นของข้อความที่มีค่าความสัมพันธ์ กับ คำถาม ที่สุดไว้อันดับที่ 1 และ เรียงไปตามลำดับ) 
+
+  สาเหตุ:
+    ทดสอบค้นหาด้วย ChromaDb ผ่าน Langchain และ ใช้ ChromaDB แบบไม่ผ่าน Langchain  ผลลัพธ์ที่ได้ เหมือนกัน 
+    แต่ 
+
+    ในกรณีของการเรียก ChromaDB โดยไม่ผ่าน Langchain จะมีคุณสมบัติการค้นหา .query และกำหนด where ได้เฉพาะเจาะจงกว่า ทำให้ได้ผลลัพธ์ที่ถูกต้องมากกว่า
+
+  แก้โดย:
+    ในขั้นตอนการอ่านเอกสาร pdf, word, html, json, ... และ query ใช้ ChromaDB โดยที่่ไม่ผ่าน Langchain
+
+  
+ > LLM เมื่อสร้างคำตอบแล้วไม่ตัดประโยคให้
+    A3 A: The Account Status options available in the system are CanBuy, CanSell, BuyBotton 
+    Display, SellButton Display, Buy, Sell, Pending, Active, Lock(buy), Lock(sell), and 
+    Lock(buy,sell).
+    Q4 Q: Is it possible to buy and sell shares when the Share Status is CLOSEONLY? 
+    A4 A: No, it is not possible to buy and sell shares when the Share Status is CLOSEONLY.    
+    Q5 Q: What are the possible values for the CanBuy and CanSell Account Status 
+    options?
+
+    Question: Is it possible to buy and sell shares when the Share Status is CLOSEONLY? 
+
+    ผลที่ได้:
+      No, it is not possible to buy and sell shares when the Share Status is CLOSEONLY. Q5 Q: What are the possible 
+      values for the CanBuy and CanSell Account Status options?
+
+    สาเหตุ:
+      เกิดจากข้อความที่ส่งให้กับ LLM ขาดรูปแบบของ End-Of-Sequence (EOS)/Stop Sequence หรือที่เรียกว่า จุดสิ้นสุดของลำดับ Token
+      จะมีรูปแบบดังนี้
+      1.) .\n เช่น  No, it is not possible to buy and sell shares when the Share Status is CLOSEONLY.\n
+        เมื่อ LLM เจอรูปแบบ .\n ก็จะหยุดสร้างคำตอบทันที
+      
+    แก้โดย:
+      1.) ให้เคาะ Space จำนวน 4 ครั้งต่อท้ายประโยค ก่อนขึ้นบรรทัดใหม่ และกำหนด n_bath = 1
+      "No, it is not possible to buy and sell shares when the Share Status is CLOSEONLY." + Space 4 ครั้ง
+      (ไม่แนะนำวิธีนี้ แต่ สามารถแก้ปัญหาได้ ให้ใช้วิธีที่ 2 ดีที่สุด)
+
+      2.) รูปแบบของของข้อความที่ส่งให้กับ LLM ให้มี .\n  ลงท้าย เช่น
+        No, it is not possible to buy and sell shares when the Share Status is CLOSEONLY.\n
+        (แนะนำวิธีนี้)
+
+
+
+
+
+
+
++ 30/06/2023
+ > ทำความเข้าใจ Parameter top_p, top_k และ n_predict
+และปรับแต่งค่านี้ ที่ส่งให้กับ LLM เพื่อสร้างรูปประโยคในการตอบคำถาม
+ > พบปัญหา ผลลัพธ์ที่ได้จากการใช้ from langchain.vectorstores import Chroma   การใช้ ChromaDb ผ่าน Langchain
+  A. ผลลัพธ์จากการค้นหาไม่ตรงกับ คำถามที่ส่งเข้าไป และ การจัดลำดับดัชนี (index) ที่เรียงลำดับตาม distancing หรือ ความความน่าจะเป็นที่ใกล้เคียงกับคำถาม
+เพี้ยน
+
+
+
+
+
+
+
+
+
+Can I deposit more than 20,000 baht in one transaction?
+Can I deposit more than 500,000 baht per day?
+Can I deposit cash outside of the 9.00-17.00 time frame?
+How much is the fee for depositing cash?
+How can I avoid paying the 15 baht fee for depositing cash if I am over 15 years old?
+What are the conditions for using the Deposit Cash Balance feature?
+Please generate Questions and Answers that customers can ask
+

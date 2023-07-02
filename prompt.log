@@ -1,0 +1,21 @@
+prompt message: 
+Q3 Q: What are the Account Status options available in the system?
+A3 A: The Account Status options available in the system are CanBuy, CanSell, BuyBotton
+Display, SellButton Display, Buy, Sell, Pending, Active, Lock(buy), Lock(sell), and
+Lock(buy,sell).
+
+Q4 Q: Is it possible to buy and sell shares when the Share Status is CLOSEONLY?
+A4 A: No, it is not possible to buy and sell shares when the Share Status is CLOSEONLY.
+Q5 Q: What are the possible values for the CanBuy and CanSell Account Status
+options?
+A5 A: The possible values for CanBuy and CanSell Account Status options are Yes and No.
+
+Q6 Q: What does a Pending Account Status mean?
+A6 A: A Pending Account Status means that neither Buy nor Sell is available.
+
+Q7 Q: What does an Active Account Status mean?
+A7 A: An Active Account Status means that both Buy and Sell are available.  
+
+
+Question: Is it possible to buy and sell shares when the Share Status is CLOSEONLY?
+

@@ -125,9 +125,10 @@ class LLModel:
         self.model = None
         self.model_name = None
 
-    def __del__(self):
-        if self.model is not None:
-            llmodel.llmodel_model_destroy(self.model)
+    # def __del__(self):
+    #     if self.model is not None:
+    #         llmodel.llmodel_model_destroy()
+
 
     def load_model(self, model_path: str) -> bool:
         """
@@ -144,8 +145,9 @@ class LLModel:
         """
         model_path_enc = model_path.encode("utf-8")
         self.model = llmodel.llmodel_model_create(model_path_enc)
-        #self.model = llmodel.llmodel_model_create2(model_path_enc, 'auto'.encode('utf-7'), ctypes.POINTER(LLModelError))
+        #self.model = llmodel.llmodel_model_create2(model_path_enc, 'auto'.encode('utf-8'), ctypes.Structure(LLModelError))
         #print('use llmodel_model_create2 to load model')
+        
 
         if self.model is not None:
             llmodel.llmodel_loadModel(self.model, model_path_enc)
