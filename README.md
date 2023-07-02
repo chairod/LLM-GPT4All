@@ -80,7 +80,8 @@ SOURCE_DOCUMENT_PATH=source_documents\
 + Token ข้อความที่ถูกเก็บอยู่ใน .bin จะถูกเก็บแยกออกเป็นแต่ล่ะ Token ซึ่งในแต่ละ Token ก็จะประกอบไปด้วยข้อความที่อยู่ภายในนั้น  
 ยกตัวอย่างเช่น  
 ให้มองภาพเป็นลักษณะของ Table ซึ่งใน Table ก็จะประกอบไปด้วย Cell ในแต่ละ Cell ก็คือ Token และในแต่ละ Cell ก็จะประกอบไปด้วย ข้อความที่ถูกเก็บเอาไว้ซึ่งจะมี Id กำกับเอาไว้นั่นก็คือ TokenId
-
++ End-Of-Sequence หรือ Stop Sequence หรือที่เรียกว่า จุดสิ้นสุดของลำดับ Token จะมีรูปแบบดังนี้
+  + .\n เช่น  No, it is not possible to buy and sell shares when the Share Status is CLOSEONLY.\n เมื่อ LLM เจอรูปแบบ .\n ก็จะหยุดสร้างคำตอบทันที
 
 ### นัยความหมายของ Parameter ที่จะส่งให้กับ LLM (GPT4All)  
 รายชื่อ Parameter ทั้งหมดที่ผ่านให้กับ LLM ที่ใช้ในการรันเพื่อหาคำตอบจากสิ่งที่เราถาม
