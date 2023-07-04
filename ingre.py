@@ -36,7 +36,8 @@ from constants import (
     AI_DB_METADATA_DOCUMENT_SOURCE_NAME,
     get_default_ai_db_collection_name,
     load_chroma_database,
-    get_default_embedding
+    get_default_embedding,
+    transform_special_character_to_encoded
 )
 
 
@@ -148,24 +149,33 @@ def process_documents(collection: Collection, ignored_files: List[str] = []) -> 
     # 3. นำเนื้อความที่ได้จาก ข้อ 2 ไปสร้างเป็นเอกสาร และ เก็บลง ChromaDB (AI DB)
     ret_new_document = []
     for doc in documents:
-        split_texts = re.split(pattern="\n|\n\n|\r\n", string=doc.page_content)
-        split_texts = [f'{text.strip()}\n' if text.strip().endswith('.') else text.strip() for text in split_texts if len(text.strip()) > 0]
-        cleaned_texts = '\n'.join(split_texts)
+        split_texts = re.split(pattern="\n{1,}|\r\n", string=doc.page_content)
+        split_texts = [re.sub('\s{2,}', ' ', text.strip()) for text in split_texts if len(text.strip()) > 0]
+        split_texts = [f'{text}\n' if text.endswith('.') else text for text in split_texts] # ทำ Markpoint ให้ LLM ทราบถึง End-of-sequence/Stop Sequence/Stop Generate Text/จุดสิ้นสุดของประโยค
+        cleaned_texts = ' '.join(split_texts)
 
         # ตัดข้อความแยกออกเป็นแต่ล่ะ Chunk (แยกออกเป็นก้อนๆ)
-        prepare_texts = text_splitter.split_text(text=cleaned_texts)
+        # .split_text \n จะถูกตัดออกไปหาก เป็นคำสุดท้ายของ chunk พอดี
+        chunks = text_splitter.split_text(text=cleaned_texts)
+        chunks = [f'{chunk}\n' if chunk.endswith('.') else chunk for chunk in chunks] # Mark point End-Of-Sequence/Stop Sequence/Stop Generate Text ไว้ให้สำหรับ LLM
         id_count = 1
-        for prepare_text in prepare_texts:
+        for chunk in chunks:
             new_idx = f'idx_{id_count}'
             id_count += 1
+
+            # จัดการกับ Special Character เพื่อไม่ให้เกิดข้อผิดพลาดในระหว่างการสร้างคำตอบของ LLM เช่น
+            # Feature: Deposit cash balance Conditions: Users can’t deposit
+            # เมื่อเจอ ’ ในบางครั้งจะเป็นผลทำให้ LLM มี Exception ระหว่างการ Generate คำตอบ
+            # ** ยกเลิกออกไปก่อน: ยังหาวิธี decode ข้อความที่ถูก encode กลับมาเป็น original ไม่ได้
+            chunk_transform_special_character = chunk #transform_special_character_to_encoded(chunk)
 
             # เก็บข้อมูลในแต่ล่ะ Chunk ลง AI DB
             collection.add(
                 ids = [f"{doc.metadata['source']}-{new_idx}"],
-                documents=[prepare_text],
+                documents=[chunk_transform_special_character],
                 metadatas=[{AI_DB_METADATA_INTERNAL_IDX_NAME: new_idx, AI_DB_METADATA_DOCUMENT_SOURCE_NAME: doc.metadata['source']}]
             )
-            ret_new_document.append(prepare_text)
+            ret_new_document.append(chunk_transform_special_character)
 
     return ret_new_document
 

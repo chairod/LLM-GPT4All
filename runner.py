@@ -1,3 +1,4 @@
+import re
 import chromadb
 from constants import (
     #EMBEDDING_MODEL_NAME, 
@@ -91,7 +92,7 @@ def query_from_funetune(query_str: str, db: chromadb.API) -> str:
             n_results=AI_DB_SEARCH_RESULT_RECORD
         )
         
-        ret_str = '\n'.join([document_content for document_content in out['documents'][0]]) if len(out['documents'][0]) > 0 else ''
+        ret_str = ''.join([f'{document_content} ' if document_content.endswith('.\n') else document_content for document_content in out['documents'][0]]) if len(out['documents'][0]) > 0 else ''
         return ret_str
     
 
@@ -101,7 +102,7 @@ def query_from_funetune(query_str: str, db: chromadb.API) -> str:
     # เนื่องจาก Chunk เป็นการตัดชุดของข้อความออกเป็นส่วนๆ มีโอกาสที่ คำตอบ ของคำถามจะไปอยู่ใช้ Chunk ลำดับถัดไป
     doc_source = parent_out['metadatas'][0][0][AI_DB_METADATA_DOCUMENT_SOURCE_NAME]
     doc_internal_idx = parent_out['metadatas'][0][0][AI_DB_METADATA_INTERNAL_IDX_NAME]
-    doc_internal_idx = f'{doc_internal_idx[0:len(doc_internal_idx)-1]}{int(doc_internal_idx[-1]) + 1}'
+    doc_internal_idx = f"idx_{int(doc_internal_idx.replace('idx_', '')) + 1}"
     out = collection.query(
         query_texts=[query_str],
         n_results=1,
@@ -122,7 +123,9 @@ def query_from_funetune(query_str: str, db: chromadb.API) -> str:
     )
 
 
-    ret_str = f"{ret_str}\n{out['documents'][0][0]}" if len(out['documents'][0]) > 0 else ret_str
+    ret_str = f'{ret_str} ' if ret_str.endswith('.\n') else ret_str
+    ret_str = f"{ret_str}{out['documents'][0][0]}" if len(out['documents'][0]) > 0 else ret_str
+
     return ret_str
 
 
@@ -157,14 +160,14 @@ llm.set_thread_count(os.cpu_count())
 # สำหรับผ่านค่าให้กับ LLM
 # {personnel_info}, {question}  ตั้งชื่อเป็นอะไรก็ได้ และ input_variables จะต้องกำหนดชื่อนั้นๆลงไปด้วย
 # question: เมื่อ LLM เจอคำนี้และได้คำตอบแล้ว LLM จะแสดงข้อความว่า  Answer: ....
-# prompt=PromptTemplate(
-#     template= """
-# {personnel_info}
+prompt=PromptTemplate(
+    template= """
+{personnel_info}
 
-# Question: {question}
-# """,
-#     input_variables=['personnel_info', 'question']
-# )
+Question: {question}
+""",
+    input_variables=['personnel_info', 'question']
+)
 
 
 print()
@@ -209,13 +212,23 @@ while True:
     #     personnel_info = ' .\n '.join(out_info) + ' .\n'
 
     personnel_info = query_from_funetune(query_str=question,db=ai_db)
-    #query_str = prompt.format(personnel_info=personnel_info, question=question)
-    query_str = f'{personnel_info}  \n\n\nQuestion: {question}\n\n'
+    personnel_info = "Answer: i don't know" if personnel_info.strip() == '' else personnel_info
+    query_str = prompt.format(personnel_info=personnel_info, question=question)
+    # query_template_str = """
+    # {human_information}
+
+    # Question: {question}
+    # """
+    # query_str = query_template_str.replace('{human_information}', personnel_info)
+    # query_str = query_str.replace('{question}', question)
 
     if 'DEBUG' == LLM_RUNNING_MODE:
+        query_str_out = query_str.replace("\n", "[debug:new_line]")
         f = open('prompt.log', 'w')
-        f.write(f'prompt message: \n{query_str}')
+        f.write(f'prompt message: \n{query_str_out}')
         f.close()
+
+        #print(query_str_out)
 
     # เอกสาร อ้างอิงความหมายของ Parameter 
     # custom_gpt4all\llmodel_DO_NOT_MODIFY\llmodel_c.h -> llmodel_prompt_context
@@ -243,7 +256,29 @@ while True:
     llm.generate(
         prompt=query_str,
         streaming=True,
+
+
+        # ค่าอยู่ระหว่าง 0 - 1 เช่น 0.1, 0.2, 0.3, 0.4, ..., 1
+        # เป็นค่าความคิดสร้างสรรค์ ในการตอบคำถามของ LLM
+        # นัยสำคัญของ Fine-tune:
+        #   ค่า temp จะมีนัยสำคัญในการนำข้อความ ที่ผ่านให้กับ LLM ด้วย Prompt โดย LLM จะนำ Prompt นั้นมาวิเคราะห์ข้อความที่อยู่ภายใน Prompt เพื่อให้ได้ซึ่งคำตอบ
+        # ตัวอย่างเช่น:
+        #   Feature: Deposit cash balance Conditions: Users can't deposit cash amounts over 20,000 baht per transaction.\n 
+        # Users can’t deposit cash amounts over 500,000 baht per day.\n
+        # Users can deposit cash amounts between 9.00-17.00 If the user’s age is between 12- and 15 years old the fee amount charged is 0.00 baht.\n
+        #
+        #  Question: Can I deposit more than 500,000 baht per day?
+        #  ถ้ากำหนด temp = 0.3 คำตอบที่ได้จะเป็น Yes เสมอ
+        #  ถ้ากำหนด temp = 0.5 คำตอบที่ได้จะเป็น No แต่รูปแบบประโยค ยังไม่สมบูรณ์
+        #  ถ้ากำหนด temp = 0.6 คำตอบที่ได้จะเป็น No แต่รูปแบบประโยค ยังไม่สมบูรณ์ แต่ทิศทางดีกว่า temp = 0.5
+        #  ถ้ากำหนด temp = 0.7 คำตอบที่ได้จะเป็น No แต่รูปแบบประโยค เริ่มสมบูรณ์ขึ้น แต่ยังมีบางส่วนที่ต้องแก้ไข
+        #  ถ้ากำหนด temp = 0.8 คำตอบที่ได้จะเป็น No รูปแบบประโยคเริ่มถูกต้อง และมีทิศทางทีดี (แนะนำให้ใช้ค่าประมาณนี้)
+        #
+        # คำแนะนำและบริษทในการปรับค่า:
+        #   A. หากนำ LLM นี้ไปใช้งานในเอกสารที่เป็น ลักษณะ Q & A ซึ่งมีคำถามและคำตอบ ในเนื้อหาอยู่แล้ว แนะนำให้ใช้ค่าที่ 0.3 ก็เพียงพอแล้ว
+        #   B. หากนำ LLM นี้ไปใช้งานในเอกสารที่มีเนื้อหา ที่ต้องการให้ LLM นำเนื้อหานั้นมาวิเคราะห์ข้อความ เพื่อสังเคราะห์ออกมาเป็นคำตอบให้ปรับค่าเป็น 0.8 จะถือเป็นค่าที่เหมาะสม
         temp=llm_temperature,
+
 
         # จำนวน Token (ชุดของข้อความที่มีความเป็นไปได้ ที่ใกล้งเคียงกับคำถาม) ที่บอกให้ LLM หยิบมาใช้ในการสร้างประโยคคำตอบ
         # ซึ่งรายการ Token ที่ได้จะถูกจัดลำดับ (sort) ตามความน่าจะเป็นที่ มากสุดไปน้อย สุด
@@ -275,8 +310,8 @@ while True:
         
         
 
-        #repeat_penalty = 1.5,
-        #repeat_last_n = 50,
+        #repeat_penalty = 0.0,
+        #repeat_last_n = 0,
         #n_batch = 20
     )
 

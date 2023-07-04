@@ -1,4 +1,5 @@
 import os
+import unicodedata
 from dotenv import load_dotenv
 import chromadb
 from chromadb.config import Settings
@@ -36,6 +37,22 @@ def get_default_embedding() -> embedding_functions.SentenceTransformerEmbeddingF
     return embedding_functions.SentenceTransformerEmbeddingFunction(model_name=EMBEDDING_MODEL_NAME)
 
 
+def transform_special_character_to_encoded(text: str, encode: str | None = "utf-8") -> str:
+    """
+    แปลงอักขระพิเศษให้เป็นข้อความที่สามารถเข้าใจได้
+    text ข้อความที่ต้องการแปลง
+    encode  utf-8 (default), ascii
+    """
+    if text == None: return ''
+    str_transform = unicodedata.normalize('NFD', text).encode(encode, 'ignore')
+    return str(str_transform).replace("b'", '').replace("'", '')
+
+def decode_special_character_to_str(text: str, encode: str | None = 'utf-8') -> str:
+    """
+    แปลงข้อความที่มีการ encode อักขระพิเศษไว้แล้ว ให้กลับมาเป็น original message ดังเดิม
+    """
+    encoder = unicodedata.normalize('NFD', text).encode(encode, 'ignore')
+    return encoder.decode(encode, 'ignore')
 
 
 

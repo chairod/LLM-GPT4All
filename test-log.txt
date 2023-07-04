@@ -1,3 +1,17 @@
++ 03/07/2023
+  > ทำความเข้าใจใน Parameter temp ซึ่งค่านี้จะมีส่วนสำคัญในการ วิเคราะห์ข้อความและการสร้างสรรค์คำตอบ ด้วย เช่น
+  ตัวอย่างเช่น:  ผ่านค่าชุด Prompt นี้ให้กับ LLM
+  
+    Feature: Deposit cash balance Conditions: Users can't deposit cash amounts over 20,000 baht per transaction.\n 
+    Users can’t deposit cash amounts over 500,000 baht per day.\n
+    Users can deposit cash amounts between 9.00-17.00 If the user’s age is between 12- and 15 years old the fee amount charged is 0.00 baht.\n
+    
+    Question: Can I deposit more than 500,000 baht per day?
+    ถ้ากำหนด temp = 0.3 คำตอบที่ได้จะเป็น Yes เสมอ
+    ถ้ากำหนด tmp = 0.8 คำตอบที่ได้จะเป็น No ตามเนื้อหาและบริบทข้อความ ที่ส่งไปกับ Prompt
+
+
+
 + 02/07/2023
  > พบปัญหาการใช้งาน PromptTemplate ของ Langchain
   ชุดข้อความที่ส่งให้กับ PromptTemplate จะมีรูปแบบ EOS (End-Of-Seqeuence หรือ Stop Sequence) เพื่อบอกให้ LLM สิ้นสุดการสร้างคำตอบเมื่อเจอ .\n
