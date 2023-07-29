@@ -17,8 +17,9 @@ from langchain.document_loaders import (
     UnstructuredMarkdownLoader,
     UnstructuredODTLoader,
     UnstructuredPowerPointLoader,
-    UnstructuredWordDocumentLoader,
+    UnstructuredWordDocumentLoader
 )
+from helper.pdfHelper import customPdfLoader
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 #from langchain.vectorstores import Chroma
@@ -84,7 +85,12 @@ LOADER_MAPPING = {
     ".html": (UnstructuredHTMLLoader, {}),
     ".md": (UnstructuredMarkdownLoader, {}),
     ".odt": (UnstructuredODTLoader, {}),
-    ".pdf": (PDFMinerLoader, {}),
+
+    # PDFMinerLoader อ่านข้อมูลไฟล์ pdf ที่เป็น table ไม่ถูกต้อง ซึ่งจะอ่านแนวตั้ง หรือตามคอลัมล์ (ควรอ่านตาม row)
+    # มีผลทำให้ข้อมูลที่เก็บไว้ใน ai db เมื่อ Query ขึ้นมาจะได้กลุ่มข้อควาที่เพี้ยน
+    # จะได้ Optimize customPdfLoader มาใช้งานโดยอิงกับ Package PyPDF2
+    #".pdf": (PDFMinerLoader, {}), 
+    ".pdf": (customPdfLoader, {}), 
     ".ppt": (UnstructuredPowerPointLoader, {}),
     ".pptx": (UnstructuredPowerPointLoader, {}),
     ".txt": (TextLoader, {"encoding": "utf8"}),

@@ -63,11 +63,11 @@
 
 
 ### ทดสอบ ฟังชันก์ ของ constant.py
-import unicodedata
-from constants import (
-    transform_special_character_to_encoded,
-    decode_special_character_to_str
-)
+# import unicodedata
+# from constants import (
+#     transform_special_character_to_encoded,
+#     decode_special_character_to_str
+# )
 
 # text_encoder = 'Cześć'.encode('utf-8', 'ignore')
 # print(f'text_encoder: {text_encoder}')
@@ -75,11 +75,33 @@ from constants import (
 # text_decoded = text_encoder.decode('utf-8', 'ignore')
 # print(f'text_decoded: {text_decoded}')
 
-plainText = 'Cześć'
-encoder = plainText.encode('utf-8', 'ignore')
-print(f"encoder: {encoder}, byte_to_string: {encoder.decode('utf-8', 'ignore')}")
+# plainText = 'Cześć'
+# encoder = plainText.encode('utf-8', 'ignore')
+# print(f"encoder: {encoder}, byte_to_string: {encoder.decode('utf-8', 'ignore')}")
 
 
-#decoder = b'Cze\xc5\x9b\xc4\x87'
-decoder = bytes('Feature: Deposit cash balance Conditions: Users can\\xe2\\x80\\x99t', 'utf-8')
-print(decoder.split(b'\\'))
+# #decoder = b'Cze\xc5\x9b\xc4\x87'
+# decoder = bytes('Feature: Deposit cash balance Conditions: Users can\\xe2\\x80\\x99t', 'utf-8')
+# print(decoder.split(b'\\'))
+
+
+
+
+
+# ทดสอบ Script "helper/finetuneHelper.py"
+from helper.finetuneHelper import FinetuneQuery
+from constants import (
+    get_default_ai_db_collection_name,
+    get_default_embedding,
+    load_chroma_database,
+    is_exists_collection_name,
+    AI_DB_SEARCH_RESULT_RECORD,
+    AI_DB_METADATA_DOCUMENT_SOURCE_NAME,
+    AI_DB_METADATA_INTERNAL_IDX_NAME
+)
+
+db = load_chroma_database()
+collection = db.get_collection(name=get_default_ai_db_collection_name(), embedding_function=get_default_embedding())
+
+out = FinetuneQuery.query_from_funetune(query_str='What is the bank field used for?', db=db)
+print(f'query result: {out}')

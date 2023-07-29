@@ -20,7 +20,12 @@ class DualStreamProcessor:
 
 # TODO: provide a config file to make this more robust
 LLMODEL_PATH = os.path.join("llmodel_DO_NOT_MODIFY", "build").replace("\\", "\\\\")
-MODEL_LIB_PATH = str(pkg_resources.resource_filename("gpt4all", LLMODEL_PATH)).replace("\\", "\\\\")
+#print(LLMODEL_PATH)
+#print(os.path.join("gpt4allV0_3", LLMODEL_PATH).replace("\\", "\\\\"))
+#quit()
+#MODEL_LIB_PATH = str(pkg_resources.resource_filename("gpt4all", LLMODEL_PATH)).replace("\\", "\\\\")
+MODEL_LIB_PATH = os.path.join("gpt4allV0_3", LLMODEL_PATH).replace("\\", "\\\\")
+
 
 def load_llmodel_library():
     system = platform.system()
@@ -39,9 +44,9 @@ def load_llmodel_library():
 
     llmodel_file = "libllmodel" + '.' + c_lib_ext
 
-    llmodel_dir = str(pkg_resources.resource_filename('gpt4all', \
-        os.path.join(LLMODEL_PATH, llmodel_file))).replace("\\", "\\\\")
-
+    # llmodel_dir = str(pkg_resources.resource_filename('gpt4all', \
+    #     os.path.join(LLMODEL_PATH, llmodel_file))).replace("\\", "\\\\")
+    llmodel_dir = os.path.join(MODEL_LIB_PATH, llmodel_file)
     llmodel_lib = ctypes.CDLL(llmodel_dir)
 
     return llmodel_lib

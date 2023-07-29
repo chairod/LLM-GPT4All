@@ -139,7 +139,7 @@ if len(ai_db.list_collections()) == 0:
 from langchain.prompts import PromptTemplate
 from langchain.chains.question_answering.stuff_prompt import CHAT_PROMPT
 #from gpt4all import pyllmodel, gpt4all
-from gpt4allV1_3 import pyllmodel, gpt4all
+from gpt4allV0_3 import pyllmodel, gpt4all
 from helper.ProgressiveCounter import TimerCounter
 
 
@@ -177,8 +177,7 @@ Helpful Answer:""",
     input_variables=['context', 'question']
 )
 
-
-#progressive = TimerCounter()
+progressive = TimerCounter()
 print()
 #good_distancing_qa_score = float(os.environ.get('AI_DB_SEARCH_RESULT_DISTANCING_SCORE_QA_LESS_THAN'))
 llm_temperature = float(os.environ.get('LLM_MODEL_TEMPORATURE'))
@@ -263,11 +262,11 @@ while True:
     #     int32_t repeat_last_n;  // last n tokens to penalize
     #     float context_erase;    // percent of context to erase if we exceed the context window
     # };
+
     #progressive.StartWaiting()
-    llm.prompt_model(
+    llm.generate(
         prompt=query_str,
         streaming=True,
-        reset_context=True,
 
         # ค่าอยู่ระหว่าง 0 - 1 เช่น 0.1, 0.2, 0.3, 0.4, ..., 1
         # เป็นค่าความคิดสร้างสรรค์ ในการตอบคำถามของ LLM
@@ -294,8 +293,8 @@ while True:
         # จำนวน Token (ชุดของข้อความที่มีความเป็นไปได้ ที่ใกล้งเคียงกับคำถาม) ที่บอกให้ LLM หยิบมาใช้ในการสร้างประโยคคำตอบ
         # ซึ่งรายการ Token ที่ได้จะถูกจัดลำดับ (sort) ตามความน่าจะเป็นที่ มากสุดไปน้อย สุด
         # ค่านี้จะมีผลต่อ ความยาวของประโยคคำตอบ
-        # กำหนดค่านี้เป็น 1 จะได้ประโยคคำตอบที่สั้นและกระชับ พร้อมกับเนื้อความประโยคคำตอบก็จะได้ถูกต้อง ใกล้เคียงกับคำถามมากขึ้น
-        top_k=1, 
+        # กำหนดค่านี้เป็น 1 จะได้ประโยคคำตอบที่สั้นและกระชับ
+        top_k=20, 
 
 
         # ผลรวม % จากจำนวนทั้งหมดของ top_k (คือ 20 รายการ)
@@ -328,3 +327,6 @@ while True:
 
     #progressive.StopWaiting()
     print() # เว้นช่องว่างระหว่างคำตอบที่ได้จาก LLM และแสดง Prompt เพื่อรอคำถามใหม่
+
+
+
